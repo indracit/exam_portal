@@ -13,7 +13,7 @@ function App() {
   return (
     <>
     <Title>Exam easy</Title>
-    <Button variant="contained">Hello world</Button>;
+    <Button variant="contained">Hello world</Button>
     </>
   )
 }

@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
-    "dev": "node --loader=ts-node/esm --env-file=.env --watch src/index.ts"
+    "dev": "npx ts-node src/index.ts"
   },
   "author": "indracits",
   "license": "ISC",
