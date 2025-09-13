@@ -1,19 +1,25 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import connectDB from './shared/db/mongo';
-
+import { testConnection } from './shared/db/db';
+import morgan from "morgan";
+import cookieParser from 'cookie-parser';
+import { requestLogger } from './shared/middleware/logger';
+import examRoutes from './modules/exam/routes';
 //For env File 
 dotenv.config();
 
+import authRoutes from './modules/user/routes';
 
-import authRoutes from './modules/auth/routes';
 
 const app = express();
 const port = process.env.PORT || 8000;
 
-
+app.use(morgan("dev"));
 app.use(express.json());
+app.use(cookieParser());
+app.use(requestLogger);
 app.use('/api/auth', authRoutes);
+app.use('/api/exam', examRoutes);
 
 app.get(/.*/, (req, res) => {
   res.status(404).send('Page not  found');
@@ -21,7 +27,7 @@ app.get(/.*/, (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
-  connectDB()
+ testConnection();
 });
 
 process.on("uncaughtException", (err) => {
