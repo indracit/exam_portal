@@ -1,3 +1,4 @@
+
 import type { Request, Response } from 'express';
 import { query } from '../../shared/db/db';
 
@@ -34,8 +35,6 @@ export const createQuestion = async (req: Request, res: Response) => {
 			[exam_id, question_text, question_type, marks]
 		);
 
-        // console.log(result);
-        
 		// Get inserted question id (for MySQL, result.insertId)
 		const question_id = result.insertId;
 
@@ -130,6 +129,37 @@ export const getQuestionsWithOptions = async (req: Request, res: Response) => {
 		res.status(200).json({ questions: questionsWithOptions });
 	} catch (error) {
 		console.error('[QUESTION] Error fetching questions:', error);
+		res.status(500).json({ message: 'Internal server error' });
+	}
+};
+
+
+export const getAnsweredQuestions = async (req: Request, res: Response) => {
+	try {
+		const { exam_id, student_id } = req.params;
+		const answeredQuestions = await query(
+			`SELECT 
+				q.id AS questionId,
+				q.question_text,
+				JSON_ARRAYAGG(
+					JSON_OBJECT(
+						'optionId', o.id,
+						'optionText', o.option_text,
+						'isCorrect', o.is_correct
+					)
+				) AS options,
+				a.answer_text AS submittedAnswer
+			FROM questions q
+			JOIN options o ON q.id = o.question_id
+			LEFT JOIN answers a ON q.id = a.question_id
+			JOIN submissions s ON s.id = a.submission_id AND s.exam_id = q.exam_id
+			WHERE q.exam_id = ? AND s.student_id = ?
+			GROUP BY q.id, q.question_text, q.question_type, q.marks, a.selected_option_id, a.answer_text, a.is_correct`,
+			[exam_id, student_id]
+		);
+		res.status(200).json({ questions: answeredQuestions });
+	} catch (error) {
+		console.error('[QUESTION] Error fetching answered questions:', error);
 		res.status(500).json({ message: 'Internal server error' });
 	}
 };
