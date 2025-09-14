@@ -99,7 +99,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
 
 export const getAllExams = async (req: Request, res: Response) => {
 	try {
-		const exams = await query('SELECT * FROM exams');
+		const exams = await query('SELECT s.id as examid,title,description,duration_min,s.id as submissionid FROM exams e join submissions s on e.id = s.exam_id;');
 		res.status(200).json({ exams });
 	} catch (error) {
 		console.error('[EXAM] Error fetching exams:', error);
@@ -110,29 +110,23 @@ export const getAllExams = async (req: Request, res: Response) => {
 export const getQuestionsWithOptions = async (req: Request, res: Response) => {
 	try {
 		const { exam_id } = req.params;
-		// Fetch questions for the exam
-		const questions = await query(
-			'SELECT * FROM questions WHERE exam_id = ?',
+		const questionsWithOptions = await query(
+			`SELECT 
+				q.id AS questionId,
+				q.question_text,
+				q.question_type,
+				JSON_ARRAYAGG(
+					JSON_OBJECT(
+						'optionId', o.id,
+						'optionText', o.option_text
+					)
+				) AS options
+			FROM questions q
+			JOIN options o ON q.id = o.question_id
+			WHERE q.exam_id = ?
+			GROUP BY q.id, q.question_text, q.question_type`,
 			[exam_id]
 		);
-
-		// Fetch options for all questions
-		const questionIds = (questions as any[]).map(q => q.id);
-		let options: any[] = [];
-		if (questionIds.length > 0) {
-            
-			options  = await query(
-				`SELECT * FROM options WHERE question_id IN (${questionIds.map(() => '?').join(',')})`,
-				questionIds
-			);
-		}
-
-		// Attach options to questions
-		const questionsWithOptions = (questions as any[]).map(q => ({
-			...q,
-			options: (options as any[]).filter(opt => opt.question_id === q.id)
-		}));
-
 		res.status(200).json({ questions: questionsWithOptions });
 	} catch (error) {
 		console.error('[QUESTION] Error fetching questions:', error);
