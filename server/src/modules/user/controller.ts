@@ -5,7 +5,6 @@ import crypto from 'crypto';
 import { generateAccessToken, generateRefreshToken } from '../../shared/utils/jwt';
 
 
-
 export const login = async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body;
@@ -33,12 +32,12 @@ export const login = async (req: Request, res: Response) => {
         const refreshToken = generateRefreshToken({ name: user.name, role: user.role });
 
         // Send tokens in cookies
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 15 * 60 * 1000,
-            sameSite: 'strict',
-        });
+        // res.cookie('accessToken', accessToken, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     maxAge: 15 * 60 * 1000,
+        //     sameSite: 'strict',
+        // });
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -46,7 +45,7 @@ export const login = async (req: Request, res: Response) => {
             sameSite: 'strict',
         });
 
-        res.status(200).json({ name: user.name, role: user.role });
+    res.status(200).json({ name: user.name, role: user.role, accessToken });
     } catch (error) {
         console.error('[LOGIN] Internal server error:', error);
         res.status(500).json({ message: 'internal server error' });
@@ -87,12 +86,12 @@ export const signup = async (req: Request, res: Response) => {
         const refreshToken = generateRefreshToken(user);
 
         // Send tokens in cookies
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 15 * 60 * 1000,
-            sameSite: 'strict',
-        });
+        // res.cookie('accessToken', accessToken, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     maxAge: 15 * 60 * 1000,
+        //     sameSite: 'strict',
+        // });
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -100,8 +99,8 @@ export const signup = async (req: Request, res: Response) => {
             sameSite: 'strict',
         });
 
-        console.log(`[SIGNUP] Tokens issued for username=${username}`);
-        res.status(201).json({ message: 'Signup successful', user });
+    console.log(`[SIGNUP] Tokens issued for username=${username}`);
+    res.status(201).json({ message: 'Signup successful', user, accessToken });
     } catch (error) {
         console.error('[SIGNUP] Internal server error:', error);
         res.status(500).json({ message: 'internal server error' });
@@ -117,19 +116,19 @@ export const signup = async (req: Request, res: Response) => {
         if (!tokens) {
             return res.status(401).json({ message: 'Invalid or expired refresh token' });
         }
-        res.cookie('accessToken', tokens.accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 15 * 60 * 1000,
-            sameSite: 'strict',
-        });
+        // res.cookie('accessToken', tokens.accessToken, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     maxAge: 15 * 60 * 1000,
+        //     sameSite: 'strict',
+        // });
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 7 * 24 * 60 * 60 * 1000,
             sameSite: 'strict',
         });
-        res.status(200).json({ message: 'Tokens refreshed', user: tokens.user });
+    res.status(200).json({ message: 'Tokens refreshed', user: tokens.user, accessToken: tokens.accessToken });
     } catch (error) {
         console.error('[REFRESH] Internal server error:', error);
         res.status(500).json({ message: 'internal server error' });

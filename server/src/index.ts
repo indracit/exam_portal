@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { testConnection } from './shared/db/db';
 import morgan from "morgan";
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { requestLogger } from './shared/middleware/logger';
 import examRoutes from './modules/exam/routes';
@@ -14,6 +15,10 @@ import authRoutes from './modules/user/routes';
 const app = express();
 const port = process.env.PORT || 8000;
 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
