@@ -36,7 +36,7 @@ export default function Login() {
       auth?.login({ name: response.name, role: response.role }, response.accessToken);
       
       setUserPass({ username: '', password: '' });
-      navigate('/home');
+      navigate('/home/dashboard');
     } catch(error) {
       console.log(error);
       setError('Login failed. Please try again.');
